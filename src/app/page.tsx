@@ -1,9 +1,9 @@
-import Timer from "@/components/Timer";
+import PomodoroApp from "@/components/PomodoroApp";
 
 export default function Home() {
   return (
     <main>
-      <Timer />
+      <PomodoroApp />
     </main>
   );
 }

@@ -1,14 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  CYCLES_UNTIL_LONG_BREAK,
-  MODES,
-  MODE_ORDER,
-  type ModeId,
-} from "@/lib/modes";
+import { useEffect } from "react";
+import { MODES, MODE_ORDER, type ModeId } from "@/lib/modes";
 import { useTimer } from "@/lib/useTimer";
-import { playBeep } from "@/lib/sound";
 
 function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -16,29 +10,24 @@ function formatTime(totalSeconds: number): string {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-export default function Timer() {
-  const [modeId, setModeId] = useState<ModeId>("focus");
-  // Quantos blocos de foco já foram concluídos.
-  const [completedFocus, setCompletedFocus] = useState(0);
+interface TimerProps {
+  modeId: ModeId;
+  completedFocus: number;
+  onSwitchMode: (id: ModeId) => void;
+  onComplete: () => void;
+}
 
+export default function Timer({
+  modeId,
+  completedFocus,
+  onSwitchMode,
+  onComplete,
+}: TimerProps) {
   const mode = MODES[modeId];
-
-  const handleComplete = useCallback(() => {
-    playBeep();
-
-    if (modeId === "focus") {
-      const next = completedFocus + 1;
-      setCompletedFocus(next);
-      // A cada N focos, vai para a pausa longa; senão, pausa curta.
-      setModeId(next % CYCLES_UNTIL_LONG_BREAK === 0 ? "longBreak" : "shortBreak");
-    } else {
-      setModeId("focus");
-    }
-  }, [modeId, completedFocus]);
 
   const { secondsLeft, isRunning, toggle, reset } = useTimer({
     initialSeconds: mode.minutes * 60,
-    onComplete: handleComplete,
+    onComplete,
   });
 
   // Ao trocar de modo, reinicia o timer para a nova duração.
@@ -51,22 +40,18 @@ export default function Timer() {
     document.title = `${formatTime(secondsLeft)} · ${mode.label}`;
   }, [secondsLeft, mode.label]);
 
-  const switchMode = (id: ModeId) => {
-    if (id !== modeId) setModeId(id);
-  };
-
   return (
-    <div
-      className={`flex min-h-screen flex-col items-center justify-center gap-8 p-6 text-white transition-colors duration-500 ${mode.bg}`}
-    >
+    <div className="flex flex-col items-center gap-8 text-white">
       {/* Seletor de modos */}
       <div className="flex gap-2 rounded-full bg-black/20 p-1">
         {MODE_ORDER.map((id) => (
           <button
             key={id}
-            onClick={() => switchMode(id)}
+            onClick={() => onSwitchMode(id)}
             className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              id === modeId ? "bg-white/90 " + MODES[id].accent : "text-white/80 hover:bg-white/10"
+              id === modeId
+                ? "bg-white/90 " + MODES[id].accent
+                : "text-white/80 hover:bg-white/10"
             }`}
           >
             {MODES[id].label}
