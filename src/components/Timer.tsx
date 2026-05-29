@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { MODES, MODE_ORDER, type ModeId } from "@/lib/modes";
 import { useTimer } from "@/lib/useTimer";
+import { useKeyboardShortcuts } from "@/lib/useKeyboardShortcuts";
 
 function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -18,6 +19,8 @@ interface TimerProps {
   onSwitchMode: (id: ModeId) => void;
   onComplete: () => void;
   onSkip: () => void;
+  /** Habilita os atalhos de teclado (desligado com o painel aberto). */
+  shortcutsEnabled: boolean;
 }
 
 export default function Timer({
@@ -27,6 +30,7 @@ export default function Timer({
   onSwitchMode,
   onComplete,
   onSkip,
+  shortcutsEnabled,
 }: TimerProps) {
   const mode = MODES[modeId];
 
@@ -39,6 +43,20 @@ export default function Timer({
   useEffect(() => {
     reset(minutes * 60);
   }, [modeId, minutes, reset]);
+
+  // Atalhos de teclado: espaço (iniciar/pausar), R (resetar), S (pular).
+  const handleResetShortcut = useCallback(
+    () => reset(minutes * 60),
+    [reset, minutes],
+  );
+  useKeyboardShortcuts(
+    {
+      onToggle: toggle,
+      onReset: handleResetShortcut,
+      onSkip,
+    },
+    shortcutsEnabled,
+  );
 
   // Atualiza o título da aba com o tempo restante.
   useEffect(() => {
@@ -99,6 +117,13 @@ export default function Timer({
       {/* Contador de ciclos */}
       <p className="text-sm text-white/80">
         Focos concluídos: <span className="font-bold">{completedFocus}</span>
+      </p>
+
+      {/* Dica de atalhos de teclado */}
+      <p className="hidden text-center text-xs text-white/50 sm:block">
+        Atalhos: <kbd className="font-mono">Espaço</kbd> iniciar/pausar ·{" "}
+        <kbd className="font-mono">R</kbd> resetar ·{" "}
+        <kbd className="font-mono">S</kbd> pular
       </p>
     </div>
   );

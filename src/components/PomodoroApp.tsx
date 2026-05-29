@@ -118,6 +118,7 @@ export default function PomodoroApp() {
             onSwitchMode={switchMode}
             onComplete={handleComplete}
             onSkip={handleSkip}
+            shortcutsEnabled={!settingsOpen}
           />
         </div>
         <div className="w-full lg:w-96 lg:py-8">
