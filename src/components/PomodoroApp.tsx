@@ -7,6 +7,7 @@ import {
   type ModeId,
 } from "@/lib/modes";
 import { useDurations } from "@/lib/useDurations";
+import { useNotifications } from "@/lib/useNotifications";
 import { playBeep } from "@/lib/sound";
 import Timer from "@/components/Timer";
 import TaskList from "@/components/TaskList";
@@ -26,6 +27,8 @@ export default function PomodoroApp() {
     setCustomDuration,
   } = useDurations();
 
+  const notifications = useNotifications();
+
   const mode = MODES[modeId];
 
   const handleComplete = useCallback(() => {
@@ -35,13 +38,19 @@ export default function PomodoroApp() {
       const next = completedFocus + 1;
       setCompletedFocus(next);
       // A cada N focos, vai para a pausa longa; senão, pausa curta.
-      setModeId(
-        next % CYCLES_UNTIL_LONG_BREAK === 0 ? "longBreak" : "shortBreak",
+      const goLong = next % CYCLES_UNTIL_LONG_BREAK === 0;
+      notifications.notify(
+        "Foco concluído! 🍅",
+        goLong
+          ? "Hora de uma pausa longa. Você merece!"
+          : "Hora de uma pausa curta.",
       );
+      setModeId(goLong ? "longBreak" : "shortBreak");
     } else {
+      notifications.notify("Pausa encerrada", "Bora focar novamente! 💪");
       setModeId("focus");
     }
-  }, [modeId, completedFocus]);
+  }, [modeId, completedFocus, notifications]);
 
   const switchMode = useCallback(
     (id: ModeId) => {
@@ -86,6 +95,10 @@ export default function PomodoroApp() {
           customDurations={customDurations}
           onSelectPreset={selectPreset}
           onSetCustomDuration={setCustomDuration}
+          notificationsSupported={notifications.supported}
+          notificationsEnabled={notifications.enabled}
+          notificationPermission={notifications.permission}
+          onToggleNotifications={notifications.toggle}
           onClose={() => setSettingsOpen(false)}
         />
       )}

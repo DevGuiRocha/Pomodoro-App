@@ -15,6 +15,10 @@ interface SettingsPanelProps {
   customDurations: Durations;
   onSelectPreset: (id: string) => void;
   onSetCustomDuration: (mode: (typeof MODE_ORDER)[number], minutes: number) => void;
+  notificationsSupported: boolean;
+  notificationsEnabled: boolean;
+  notificationPermission: NotificationPermission | "unsupported";
+  onToggleNotifications: () => void | Promise<boolean>;
   onClose: () => void;
 }
 
@@ -24,6 +28,10 @@ export default function SettingsPanel({
   customDurations,
   onSelectPreset,
   onSetCustomDuration,
+  notificationsSupported,
+  notificationsEnabled,
+  notificationPermission,
+  onToggleNotifications,
   onClose,
 }: SettingsPanelProps) {
   const isCustom = presetId === CUSTOM_PRESET_ID;
@@ -114,6 +122,49 @@ export default function SettingsPanel({
             Entre {MIN_MINUTES} e {MAX_MINUTES} minutos. Editar ativa o modo
             personalizado.
           </p>
+        </div>
+
+        {/* Notificações */}
+        <div className="mt-6">
+          <p className="mb-2 text-sm font-medium text-gray-500">Notificações</p>
+          {!notificationsSupported ? (
+            <p className="rounded-lg bg-gray-100 px-4 py-3 text-sm text-gray-500">
+              Seu navegador não suporta notificações.
+            </p>
+          ) : (
+            <>
+              <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border-2 border-gray-200 px-4 py-3">
+                <span className="text-sm text-gray-700">
+                  Avisar quando um ciclo terminar
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={notificationsEnabled}
+                  onClick={() => onToggleNotifications()}
+                  className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full px-0.5 transition-colors ${
+                    notificationsEnabled ? "bg-rose-600" : "bg-gray-300"
+                  }`}
+                  aria-label="Habilitar notificações"
+                >
+                  <span
+                    className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      notificationsEnabled ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </label>
+              {notificationPermission === "denied" && (
+                <p className="mt-2 text-xs text-amber-600">
+                  As notificações estão bloqueadas. Libere a permissão nas
+                  configurações do navegador para este site.
+                </p>
+              )}
+              <p className="mt-2 text-xs text-gray-400">
+                As notificações só aparecem quando a aba não está em foco.
+              </p>
+            </>
+          )}
         </div>
 
         <button
