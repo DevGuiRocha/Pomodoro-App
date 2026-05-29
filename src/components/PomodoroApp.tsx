@@ -8,6 +8,7 @@ import {
 } from "@/lib/modes";
 import { useDurations } from "@/lib/useDurations";
 import { useNotifications } from "@/lib/useNotifications";
+import { useTheme } from "@/lib/useTheme";
 import { playBeep } from "@/lib/sound";
 import Timer from "@/components/Timer";
 import TaskList from "@/components/TaskList";
@@ -28,6 +29,7 @@ export default function PomodoroApp() {
   } = useDurations();
 
   const notifications = useNotifications();
+  const { theme, setTheme } = useTheme();
 
   const mode = MODES[modeId];
 
@@ -99,6 +101,8 @@ export default function PomodoroApp() {
           notificationsEnabled={notifications.enabled}
           notificationPermission={notifications.permission}
           onToggleNotifications={notifications.toggle}
+          theme={theme}
+          onSetTheme={setTheme}
           onClose={() => setSettingsOpen(false)}
         />
       )}
