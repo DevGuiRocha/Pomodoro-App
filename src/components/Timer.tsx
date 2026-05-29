@@ -12,6 +12,8 @@ function formatTime(totalSeconds: number): string {
 
 interface TimerProps {
   modeId: ModeId;
+  /** Duração do modo atual, em minutos. */
+  minutes: number;
   completedFocus: number;
   onSwitchMode: (id: ModeId) => void;
   onComplete: () => void;
@@ -19,6 +21,7 @@ interface TimerProps {
 
 export default function Timer({
   modeId,
+  minutes,
   completedFocus,
   onSwitchMode,
   onComplete,
@@ -26,14 +29,14 @@ export default function Timer({
   const mode = MODES[modeId];
 
   const { secondsLeft, isRunning, toggle, reset } = useTimer({
-    initialSeconds: mode.minutes * 60,
+    initialSeconds: minutes * 60,
     onComplete,
   });
 
-  // Ao trocar de modo, reinicia o timer para a nova duração.
+  // Ao trocar de modo ou mudar a duração, reinicia o timer.
   useEffect(() => {
-    reset(mode.minutes * 60);
-  }, [modeId, mode.minutes, reset]);
+    reset(minutes * 60);
+  }, [modeId, minutes, reset]);
 
   // Atualiza o título da aba com o tempo restante.
   useEffect(() => {
@@ -75,7 +78,7 @@ export default function Timer({
           {isRunning ? "Pausar" : "Iniciar"}
         </button>
         <button
-          onClick={() => reset(mode.minutes * 60)}
+          onClick={() => reset(minutes * 60)}
           className="rounded-full bg-black/20 px-6 py-4 text-sm font-medium uppercase tracking-wider transition-colors hover:bg-black/30"
           aria-label="Resetar timer"
         >
