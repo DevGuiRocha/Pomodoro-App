@@ -17,6 +17,7 @@ interface TimerProps {
   completedFocus: number;
   onSwitchMode: (id: ModeId) => void;
   onComplete: () => void;
+  onSkip: () => void;
 }
 
 export default function Timer({
@@ -25,6 +26,7 @@ export default function Timer({
   completedFocus,
   onSwitchMode,
   onComplete,
+  onSkip,
 }: TimerProps) {
   const mode = MODES[modeId];
 
@@ -83,6 +85,14 @@ export default function Timer({
           aria-label="Resetar timer"
         >
           Resetar
+        </button>
+        <button
+          onClick={onSkip}
+          className="rounded-full bg-black/20 px-6 py-4 text-sm font-medium uppercase tracking-wider transition-colors hover:bg-black/30"
+          aria-label="Pular para o próximo ciclo"
+          title="Pular para o próximo ciclo"
+        >
+          Pular ⏭
         </button>
       </div>
 

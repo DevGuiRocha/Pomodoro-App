@@ -33,26 +33,47 @@ export default function PomodoroApp() {
 
   const mode = MODES[modeId];
 
+  /**
+   * Avança para o próximo modo na sequência do Pomodoro. Conta o foco
+   * concluído apenas quando o avanço acontece ao final natural do ciclo
+   * (`countFocus`), não ao pular manualmente.
+   */
+  const advanceMode = useCallback(
+    (countFocus: boolean) => {
+      if (modeId === "focus") {
+        const next = completedFocus + 1;
+        const goLong = next % CYCLES_UNTIL_LONG_BREAK === 0;
+        if (countFocus) setCompletedFocus(next);
+        setModeId(goLong ? "longBreak" : "shortBreak");
+        return goLong;
+      }
+      setModeId("focus");
+      return false;
+    },
+    [modeId, completedFocus],
+  );
+
   const handleComplete = useCallback(() => {
     playBeep();
 
     if (modeId === "focus") {
-      const next = completedFocus + 1;
-      setCompletedFocus(next);
-      // A cada N focos, vai para a pausa longa; senão, pausa curta.
-      const goLong = next % CYCLES_UNTIL_LONG_BREAK === 0;
+      const goLong = advanceMode(true);
       notifications.notify(
         "Foco concluído! 🍅",
         goLong
           ? "Hora de uma pausa longa. Você merece!"
           : "Hora de uma pausa curta.",
       );
-      setModeId(goLong ? "longBreak" : "shortBreak");
     } else {
+      advanceMode(true);
       notifications.notify("Pausa encerrada", "Bora focar novamente! 💪");
-      setModeId("focus");
     }
-  }, [modeId, completedFocus, notifications]);
+  }, [modeId, advanceMode, notifications]);
+
+  // Pular: avança de modo manualmente, sem som/notificação e sem contar foco.
+  const handleSkip = useCallback(() => {
+    advanceMode(false);
+  }, [advanceMode]);
 
   const switchMode = useCallback(
     (id: ModeId) => {
@@ -83,6 +104,7 @@ export default function PomodoroApp() {
             completedFocus={completedFocus}
             onSwitchMode={switchMode}
             onComplete={handleComplete}
+            onSkip={handleSkip}
           />
         </div>
         <div className="w-full lg:w-96 lg:py-8">
