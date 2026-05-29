@@ -1,15 +1,11 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import {
-  CYCLES_UNTIL_LONG_BREAK,
-  MODES,
-  type ModeId,
-} from "@/lib/modes";
+import { MODES, type ModeId } from "@/lib/modes";
 import { useDurations } from "@/lib/useDurations";
 import { useNotifications } from "@/lib/useNotifications";
 import { useTheme } from "@/lib/useTheme";
-import { useSettings } from "@/lib/useSettings";
+import { clampCycles, useSettings } from "@/lib/useSettings";
 import { playBeep } from "@/lib/sound";
 import Timer from "@/components/Timer";
 import TaskList from "@/components/TaskList";
@@ -55,14 +51,15 @@ export default function PomodoroApp() {
         // Vai para pausa longa quando o foco contado fecha um múltiplo do
         // ciclo. Se o foco não conta, nunca dispara a pausa longa.
         const goLong =
-          countThisFocus && effective % CYCLES_UNTIL_LONG_BREAK === 0;
+          countThisFocus &&
+          effective % settings.cyclesUntilLongBreak === 0;
         setModeId(goLong ? "longBreak" : "shortBreak");
         return goLong;
       }
       setModeId("focus");
       return false;
     },
-    [modeId, completedFocus],
+    [modeId, completedFocus, settings.cyclesUntilLongBreak],
   );
 
   const handleComplete = useCallback(() => {
@@ -136,6 +133,10 @@ export default function PomodoroApp() {
           countSkippedFocus={settings.countSkippedFocus}
           onSetCountSkippedFocus={(value) =>
             setSetting("countSkippedFocus", value)
+          }
+          cyclesUntilLongBreak={settings.cyclesUntilLongBreak}
+          onSetCyclesUntilLongBreak={(value) =>
+            setSetting("cyclesUntilLongBreak", clampCycles(value))
           }
           notificationsSupported={notifications.supported}
           notificationsEnabled={notifications.enabled}

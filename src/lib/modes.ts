@@ -38,6 +38,3 @@ export const MODES: Record<ModeId, Mode> = {
 };
 
 export const MODE_ORDER: ModeId[] = ["focus", "shortBreak", "longBreak"];
-
-/** Quantos ciclos de foco até uma pausa longa. */
-export const CYCLES_UNTIL_LONG_BREAK = 4;

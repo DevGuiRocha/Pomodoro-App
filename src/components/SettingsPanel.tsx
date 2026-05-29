@@ -9,6 +9,7 @@ import {
   PRESETS,
   type Durations,
 } from "@/lib/presets";
+import { MAX_CYCLES, MIN_CYCLES } from "@/lib/useSettings";
 import type { ThemeChoice } from "@/lib/useTheme";
 
 const THEME_OPTIONS: { id: ThemeChoice; label: string; icon: string }[] = [
@@ -17,10 +18,11 @@ const THEME_OPTIONS: { id: ThemeChoice; label: string; icon: string }[] = [
   { id: "system", label: "Sistema", icon: "💻" },
 ];
 
-type Tab = "time" | "theme" | "notifications";
+type Tab = "time" | "cycles" | "theme" | "notifications";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "time", label: "Tempo", icon: "⏱️" },
+  { id: "cycles", label: "Ciclos", icon: "🔁" },
   { id: "theme", label: "Tema", icon: "🎨" },
   { id: "notifications", label: "Notificações", icon: "🔔" },
 ];
@@ -33,6 +35,8 @@ interface SettingsPanelProps {
   onSetCustomDuration: (mode: (typeof MODE_ORDER)[number], minutes: number) => void;
   countSkippedFocus: boolean;
   onSetCountSkippedFocus: (value: boolean) => void;
+  cyclesUntilLongBreak: number;
+  onSetCyclesUntilLongBreak: (value: number) => void;
   notificationsSupported: boolean;
   notificationsEnabled: boolean;
   notificationPermission: NotificationPermission | "unsupported";
@@ -50,6 +54,8 @@ export default function SettingsPanel({
   onSetCustomDuration,
   countSkippedFocus,
   onSetCountSkippedFocus,
+  cyclesUntilLongBreak,
+  onSetCyclesUntilLongBreak,
   notificationsSupported,
   notificationsEnabled,
   notificationPermission,
@@ -103,9 +109,12 @@ export default function SettingsPanel({
                     : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 }`}
                 aria-current={active ? "page" : undefined}
+                title={tab.label}
               >
                 <span aria-hidden>{tab.icon}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
+                {/* Mostra o rótulo apenas na aba ativa, evitando apertar as
+                    quatro abas num modal estreito. */}
+                {active && <span>{tab.label}</span>}
               </button>
             );
           })}
@@ -185,9 +194,31 @@ export default function SettingsPanel({
                 personalizado.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Aba: Ciclos */}
+        {activeTab === "cycles" && (
+          <div className="flex flex-col gap-4">
+            {/* Focos até a pausa longa */}
+            <label className="flex items-center justify-between gap-3 rounded-lg border-2 border-gray-200 px-4 py-3 dark:border-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Focos até a pausa longa
+              </span>
+              <input
+                type="number"
+                min={MIN_CYCLES}
+                max={MAX_CYCLES}
+                value={cyclesUntilLongBreak}
+                onChange={(e) =>
+                  onSetCyclesUntilLongBreak(Number(e.target.value))
+                }
+                className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-right outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 dark:border-gray-600 dark:bg-gray-800"
+              />
+            </label>
 
             {/* Comportamento ao pular */}
-            <label className="mt-4 flex cursor-pointer items-center justify-between gap-3 rounded-lg border-2 border-gray-200 px-4 py-3 dark:border-gray-700">
+            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border-2 border-gray-200 px-4 py-3 dark:border-gray-700">
               <span className="text-sm text-gray-700 dark:text-gray-300">
                 Pular foco conta como ciclo concluído
               </span>
@@ -208,6 +239,11 @@ export default function SettingsPanel({
                 />
               </button>
             </label>
+
+            <p className="text-xs text-gray-400">
+              Define o ritmo do Pomodoro: após esse número de focos concluídos,
+              entra uma pausa longa em vez de uma curta.
+            </p>
           </div>
         )}
 
