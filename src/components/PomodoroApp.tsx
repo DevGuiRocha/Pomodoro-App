@@ -9,6 +9,7 @@ import {
 import { useDurations } from "@/lib/useDurations";
 import { useNotifications } from "@/lib/useNotifications";
 import { useTheme } from "@/lib/useTheme";
+import { useSettings } from "@/lib/useSettings";
 import { playBeep } from "@/lib/sound";
 import Timer from "@/components/Timer";
 import TaskList from "@/components/TaskList";
@@ -30,20 +31,31 @@ export default function PomodoroApp() {
 
   const notifications = useNotifications();
   const { theme, setTheme } = useTheme();
+  const { settings, setSetting } = useSettings();
 
   const mode = MODES[modeId];
 
   /**
-   * Avança para o próximo modo na sequência do Pomodoro. Conta o foco
-   * concluído apenas quando o avanço acontece ao final natural do ciclo
-   * (`countFocus`), não ao pular manualmente.
+   * Avança para o próximo modo na sequência do Pomodoro.
+   *
+   * Ao sair de um FOCO, o avanço só conta como ciclo concluído quando
+   * `countThisFocus` é verdadeiro. A decisão pausa curta/longa é sempre
+   * baseada no número de focos que o contador EFETIVAMENTE terá — assim
+   * pular sem contar não desalinha o ritmo da pausa longa.
+   *
+   * Retorna `true` se o próximo modo for a pausa longa.
    */
   const advanceMode = useCallback(
-    (countFocus: boolean) => {
+    (countThisFocus: boolean) => {
       if (modeId === "focus") {
-        const next = completedFocus + 1;
-        const goLong = next % CYCLES_UNTIL_LONG_BREAK === 0;
-        if (countFocus) setCompletedFocus(next);
+        // Total de focos após este avanço (incrementa só se contar).
+        const effective = countThisFocus ? completedFocus + 1 : completedFocus;
+        if (countThisFocus) setCompletedFocus(effective);
+
+        // Vai para pausa longa quando o foco contado fecha um múltiplo do
+        // ciclo. Se o foco não conta, nunca dispara a pausa longa.
+        const goLong =
+          countThisFocus && effective % CYCLES_UNTIL_LONG_BREAK === 0;
         setModeId(goLong ? "longBreak" : "shortBreak");
         return goLong;
       }
@@ -70,10 +82,11 @@ export default function PomodoroApp() {
     }
   }, [modeId, advanceMode, notifications]);
 
-  // Pular: avança de modo manualmente, sem som/notificação e sem contar foco.
+  // Pular: avança de modo manualmente, sem som/notificação. Pular um foco só
+  // conta como ciclo se o usuário ativou essa preferência.
   const handleSkip = useCallback(() => {
-    advanceMode(false);
-  }, [advanceMode]);
+    advanceMode(settings.countSkippedFocus);
+  }, [advanceMode, settings.countSkippedFocus]);
 
   const switchMode = useCallback(
     (id: ModeId) => {
@@ -119,6 +132,10 @@ export default function PomodoroApp() {
           customDurations={customDurations}
           onSelectPreset={selectPreset}
           onSetCustomDuration={setCustomDuration}
+          countSkippedFocus={settings.countSkippedFocus}
+          onSetCountSkippedFocus={(value) =>
+            setSetting("countSkippedFocus", value)
+          }
           notificationsSupported={notifications.supported}
           notificationsEnabled={notifications.enabled}
           notificationPermission={notifications.permission}

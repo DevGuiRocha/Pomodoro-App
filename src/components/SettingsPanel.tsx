@@ -31,6 +31,8 @@ interface SettingsPanelProps {
   customDurations: Durations;
   onSelectPreset: (id: string) => void;
   onSetCustomDuration: (mode: (typeof MODE_ORDER)[number], minutes: number) => void;
+  countSkippedFocus: boolean;
+  onSetCountSkippedFocus: (value: boolean) => void;
   notificationsSupported: boolean;
   notificationsEnabled: boolean;
   notificationPermission: NotificationPermission | "unsupported";
@@ -46,6 +48,8 @@ export default function SettingsPanel({
   customDurations,
   onSelectPreset,
   onSetCustomDuration,
+  countSkippedFocus,
+  onSetCountSkippedFocus,
   notificationsSupported,
   notificationsEnabled,
   notificationPermission,
@@ -181,6 +185,29 @@ export default function SettingsPanel({
                 personalizado.
               </p>
             </div>
+
+            {/* Comportamento ao pular */}
+            <label className="mt-4 flex cursor-pointer items-center justify-between gap-3 rounded-lg border-2 border-gray-200 px-4 py-3 dark:border-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Pular foco conta como ciclo concluído
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={countSkippedFocus}
+                onClick={() => onSetCountSkippedFocus(!countSkippedFocus)}
+                className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full px-0.5 transition-colors ${
+                  countSkippedFocus ? "bg-rose-600" : "bg-gray-300"
+                }`}
+                aria-label="Pular foco conta como ciclo concluído"
+              >
+                <span
+                  className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                    countSkippedFocus ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </label>
           </div>
         )}
 
