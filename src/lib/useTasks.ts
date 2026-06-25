@@ -51,6 +51,17 @@ export function useTasks() {
     [setTasks],
   );
 
+  const renameTask = useCallback(
+    (id: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      setTasks((prev) =>
+        prev.map((task) => (task.id === id ? { ...task, text: trimmed } : task)),
+      );
+    },
+    [setTasks],
+  );
+
   const clearCompleted = useCallback(() => {
     setTasks((prev) => prev.filter((task) => !task.done));
   }, [setTasks]);
@@ -82,6 +93,7 @@ export function useTasks() {
     addTask,
     toggleTask,
     removeTask,
+    renameTask,
     clearCompleted,
     reorderTask,
   };

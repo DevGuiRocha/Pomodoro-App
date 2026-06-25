@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTasks } from "@/lib/useTasks";
 
 export default function TaskList() {
-  const { tasks, addTask, toggleTask, removeTask, clearCompleted, reorderTask } =
+  const { tasks, addTask, toggleTask, removeTask, renameTask, clearCompleted, reorderTask } =
     useTasks();
   const [input, setInput] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   // Índices do arrasto em andamento.
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -16,6 +19,24 @@ export default function TaskList() {
     e.preventDefault();
     addTask(input);
     setInput("");
+  };
+
+  const startEditing = (id: string, text: string) => {
+    setEditingId(id);
+    setEditingText(text);
+    setTimeout(() => editInputRef.current?.select(), 0);
+  };
+
+  const commitEdit = () => {
+    if (editingId) renameTask(editingId, editingText);
+    setEditingId(null);
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") commitEdit();
+    if (e.key === "Escape") cancelEdit();
   };
 
   const handleDrop = () => {
@@ -102,13 +123,27 @@ export default function TaskList() {
                   className="h-5 w-5 shrink-0 cursor-pointer accent-white"
                   aria-label={`Marcar "${task.text}" como concluída`}
                 />
-                <span
-                  className={`flex-1 break-words ${
-                    task.done ? "text-white/50 line-through" : ""
-                  }`}
-                >
-                  {task.text}
-                </span>
+                {editingId === task.id ? (
+                  <input
+                    ref={editInputRef}
+                    type="text"
+                    value={editingText}
+                    maxLength={140}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    onBlur={commitEdit}
+                    onKeyDown={handleEditKeyDown}
+                    className="flex-1 rounded bg-white/90 px-2 py-0.5 text-gray-900 outline-none focus:ring-2 focus:ring-white"
+                    aria-label="Editar tarefa"
+                  />
+                ) : (
+                  <span
+                    className={`flex-1 break-words ${task.done ? "text-white/50 line-through" : "cursor-text"}`}
+                    onDoubleClick={() => !task.done && startEditing(task.id, task.text)}
+                    title={task.done ? undefined : "Duplo clique para editar"}
+                  >
+                    {task.text}
+                  </span>
+                )}
                 <button
                   onClick={() => removeTask(task.id)}
                   className="shrink-0 rounded p-1 text-white/50 opacity-0 transition-opacity hover:text-white group-hover:opacity-100 focus:opacity-100"
