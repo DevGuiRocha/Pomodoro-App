@@ -141,9 +141,7 @@ export default function TaskList() {
                   />
                 ) : (
                   <span
-                    className={`flex-1 break-words ${task.done ? "text-white/50 line-through" : "cursor-text"}`}
-                    onDoubleClick={() => !task.done && startEditing(task.id, task.text)}
-                    title={task.done ? undefined : "Duplo clique para editar"}
+                    className={`flex-1 break-words ${task.done ? "text-white/50 line-through" : ""}`}
                   >
                     {task.text}
                   </span>
