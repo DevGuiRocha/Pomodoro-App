@@ -35,11 +35,15 @@ export function useTasks() {
 
   const toggleTask = useCallback(
     (id: string) => {
-      setTasks((prev) =>
-        prev.map((task) =>
+      setTasks((prev) => {
+        const toggled = prev.map((task) =>
           task.id === id ? { ...task, done: !task.done } : task,
-        ),
-      );
+        );
+        return [
+          ...toggled.filter((t) => !t.done),
+          ...toggled.filter((t) => t.done),
+        ];
+      });
     },
     [setTasks],
   );

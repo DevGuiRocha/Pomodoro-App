@@ -107,12 +107,16 @@ export default function TaskList() {
                 }`}
               >
                 <span
-                  draggable
-                  onDragStart={() => setDragIndex(index)}
+                  draggable={!task.done}
+                  onDragStart={() => !task.done && setDragIndex(index)}
                   onDragEnd={handleDrop}
-                  className="shrink-0 cursor-grab select-none px-1 text-white/40 transition-colors hover:text-white/80 active:cursor-grabbing"
+                  className={`shrink-0 select-none px-1 transition-colors ${
+                    task.done
+                      ? "cursor-default text-white/20"
+                      : "cursor-grab text-white/40 hover:text-white/80 active:cursor-grabbing"
+                  }`}
                   aria-label="Arrastar para reordenar"
-                  title="Arrastar para reordenar"
+                  title={task.done ? undefined : "Arrastar para reordenar"}
                 >
                   ⠿
                 </span>
