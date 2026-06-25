@@ -148,6 +148,18 @@ export default function TaskList() {
                     {task.text}
                   </span>
                 )}
+                {!task.done && editingId !== task.id && (
+                  <button
+                    onClick={() => startEditing(task.id, task.text)}
+                    className="shrink-0 rounded p-1 text-white/50 opacity-0 transition-opacity hover:text-white group-hover:opacity-100 focus:opacity-100"
+                    aria-label={`Editar "${task.text}"`}
+                    title="Editar tarefa"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                )}
                 <button
                   onClick={() => removeTask(task.id)}
                   className="shrink-0 rounded p-1 text-white/50 opacity-0 transition-opacity hover:text-white group-hover:opacity-100 focus:opacity-100"
