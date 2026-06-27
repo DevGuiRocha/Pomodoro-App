@@ -104,8 +104,6 @@ export default function TaskList() {
               <li
                 key={task.id}
                 onDragOver={(e) => {
-                  // Não permite soltar sobre tarefas concluídas (elas ficam
-                  // bloqueadas no fim da lista).
                   if (task.done) return;
                   e.preventDefault();
                   if (overIndex !== index) setOverIndex(index);
