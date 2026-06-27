@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 
 export interface Task {
@@ -18,32 +18,47 @@ function createId(): string {
   return `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
+/**
+ * Mantém a invariante de exibição: tarefas ativas antes das concluídas,
+ * preservando a ordem relativa dentro de cada grupo (ordenação estável).
+ */
+function partitionByDone(tasks: Task[]): Task[] {
+  const active = tasks.filter((t) => !t.done);
+  const done = tasks.filter((t) => t.done);
+  return [...active, ...done];
+}
+
 export function useTasks() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>(STORAGE_KEY, []);
+  const [stored, setTasks] = useLocalStorage<Task[]>(STORAGE_KEY, []);
+
+  // Ordem de exibição sempre normalizada (ativas antes das concluídas),
+  // inclusive para dados salvos em sessões anteriores.
+  const tasks = useMemo(() => partitionByDone(stored), [stored]);
 
   const addTask = useCallback(
     (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
-      setTasks((prev) => [
-        ...prev,
-        { id: createId(), text: trimmed, done: false },
-      ]);
+      // A nova tarefa é ativa: entra ao final das ativas, antes das concluídas.
+      setTasks((prev) =>
+        partitionByDone([
+          ...prev,
+          { id: createId(), text: trimmed, done: false },
+        ]),
+      );
     },
     [setTasks],
   );
 
   const toggleTask = useCallback(
     (id: string) => {
-      setTasks((prev) => {
-        const toggled = prev.map((task) =>
-          task.id === id ? { ...task, done: !task.done } : task,
-        );
-        return [
-          ...toggled.filter((t) => !t.done),
-          ...toggled.filter((t) => t.done),
-        ];
-      });
+      setTasks((prev) =>
+        partitionByDone(
+          prev.map((task) =>
+            task.id === id ? { ...task, done: !task.done } : task,
+          ),
+        ),
+      );
     },
     [setTasks],
   );
@@ -86,7 +101,8 @@ export function useTasks() {
         const next = [...prev];
         const [moved] = next.splice(from, 1);
         next.splice(to, 0, moved);
-        return next;
+        // Reforça a invariante caso a reordenação misture os grupos.
+        return partitionByDone(next);
       });
     },
     [setTasks],

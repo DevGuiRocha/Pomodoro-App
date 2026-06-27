@@ -10,6 +10,8 @@ export default function TaskList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const editInputRef = useRef<HTMLInputElement>(null);
+  // Sinaliza um cancelamento em andamento para o onBlur não confirmar a edição.
+  const cancelingRef = useRef(false);
 
   // Índices do arrasto em andamento.
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -28,11 +30,19 @@ export default function TaskList() {
   };
 
   const commitEdit = () => {
+    // Se um cancelamento disparou o blur, descarta sem renomear.
+    if (cancelingRef.current) {
+      cancelingRef.current = false;
+      return;
+    }
     if (editingId) renameTask(editingId, editingText);
     setEditingId(null);
   };
 
-  const cancelEdit = () => setEditingId(null);
+  const cancelEdit = () => {
+    cancelingRef.current = true;
+    setEditingId(null);
+  };
 
   const handleEditKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") commitEdit();
@@ -94,10 +104,17 @@ export default function TaskList() {
               <li
                 key={task.id}
                 onDragOver={(e) => {
+                  // Não permite soltar sobre tarefas concluídas (elas ficam
+                  // bloqueadas no fim da lista).
+                  if (task.done) return;
                   e.preventDefault();
                   if (overIndex !== index) setOverIndex(index);
                 }}
-                onDrop={handleDrop}
+                onDrop={(e) => {
+                  if (task.done) return;
+                  e.preventDefault();
+                  handleDrop();
+                }}
                 className={`group flex items-center gap-2 rounded-lg bg-white/10 px-2 py-2 text-white transition-all ${
                   dragIndex === index ? "opacity-40" : ""
                 } ${
