@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { MODES, MODE_ORDER, type ModeId } from "@/lib/modes";
 import { useTimer } from "@/lib/useTimer";
 import { useKeyboardShortcuts } from "@/lib/useKeyboardShortcuts";
@@ -21,6 +21,8 @@ interface TimerProps {
   onSkip: () => void;
   /** Habilita os atalhos de teclado (desligado com o painel aberto). */
   shortcutsEnabled: boolean;
+  /** Se o próximo ciclo deve iniciar automaticamente ao trocar de modo. */
+  autoStart: boolean;
 }
 
 export default function Timer({
@@ -31,6 +33,7 @@ export default function Timer({
   onComplete,
   onSkip,
   shortcutsEnabled,
+  autoStart,
 }: TimerProps) {
   const mode = MODES[modeId];
 
@@ -40,9 +43,13 @@ export default function Timer({
   });
 
   // Ao trocar de modo ou mudar a duração, reinicia o timer.
+  // autoStart inicia imediatamente (exceto na carga inicial da página).
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    reset(minutes * 60);
-  }, [modeId, minutes, reset]);
+    const shouldStart = autoStart && !isFirstRender.current;
+    isFirstRender.current = false;
+    reset(minutes * 60, shouldStart);
+  }, [modeId, minutes, reset, autoStart]);
 
   // Atalhos de teclado: espaço (iniciar/pausar), R (resetar), S (pular).
   const handleResetShortcut = useCallback(

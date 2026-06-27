@@ -13,8 +13,8 @@ interface UseTimerResult {
   start: () => void;
   pause: () => void;
   toggle: () => void;
-  /** Reinicia para uma nova duração (em segundos) e pausa. */
-  reset: (seconds: number) => void;
+  /** Reinicia para uma nova duração (em segundos). Passa `true` para iniciar imediatamente. */
+  reset: (seconds: number, autoStart?: boolean) => void;
 }
 
 /**
@@ -68,10 +68,10 @@ export function useTimer({
     }
   }, [isRunning, pause, start]);
 
-  const reset = useCallback((seconds: number) => {
-    setIsRunning(false);
-    deadlineRef.current = null;
+  const reset = useCallback((seconds: number, autoStart = false) => {
+    deadlineRef.current = autoStart ? Date.now() + seconds * 1000 : null;
     setSecondsLeft(seconds);
+    setIsRunning(autoStart);
   }, []);
 
   useEffect(() => {

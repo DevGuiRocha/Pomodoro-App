@@ -116,6 +116,7 @@ export default function PomodoroApp() {
             onComplete={handleComplete}
             onSkip={handleSkip}
             shortcutsEnabled={!settingsOpen}
+            autoStart={settings.autoStart}
           />
         </div>
         <div className="w-full lg:w-96 lg:py-8">
@@ -138,6 +139,8 @@ export default function PomodoroApp() {
           onSetCyclesUntilLongBreak={(value) =>
             setSetting("cyclesUntilLongBreak", clampCycles(value))
           }
+          autoStart={settings.autoStart}
+          onSetAutoStart={(value) => setSetting("autoStart", value)}
           notificationsSupported={notifications.supported}
           notificationsEnabled={notifications.enabled}
           notificationPermission={notifications.permission}

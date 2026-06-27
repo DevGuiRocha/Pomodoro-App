@@ -7,6 +7,8 @@ export interface Settings {
   countSkippedFocus: boolean;
   /** Quantos focos concluídos até disparar uma pausa longa. */
   cyclesUntilLongBreak: number;
+  /** Se o próximo ciclo deve iniciar automaticamente ao terminar o atual. */
+  autoStart: boolean;
 }
 
 const STORAGE_KEY = "pomodoro:settings";
@@ -17,6 +19,7 @@ export const MAX_CYCLES = 12;
 const DEFAULT_SETTINGS: Settings = {
   countSkippedFocus: false,
   cyclesUntilLongBreak: 4,
+  autoStart: false,
 };
 
 /** Limita os ciclos ao intervalo permitido (inteiro). */

@@ -37,6 +37,8 @@ interface SettingsPanelProps {
   onSetCountSkippedFocus: (value: boolean) => void;
   cyclesUntilLongBreak: number;
   onSetCyclesUntilLongBreak: (value: number) => void;
+  autoStart: boolean;
+  onSetAutoStart: (value: boolean) => void;
   notificationsSupported: boolean;
   notificationsEnabled: boolean;
   notificationPermission: NotificationPermission | "unsupported";
@@ -56,6 +58,8 @@ export default function SettingsPanel({
   onSetCountSkippedFocus,
   cyclesUntilLongBreak,
   onSetCyclesUntilLongBreak,
+  autoStart,
+  onSetAutoStart,
   notificationsSupported,
   notificationsEnabled,
   notificationPermission,
@@ -235,6 +239,29 @@ export default function SettingsPanel({
                 <span
                   className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
                     countSkippedFocus ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </label>
+
+            {/* Auto-iniciar próximo ciclo */}
+            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border-2 border-gray-200 px-4 py-3 dark:border-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Iniciar próximo ciclo automaticamente
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoStart}
+                onClick={() => onSetAutoStart(!autoStart)}
+                className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full px-0.5 transition-colors ${
+                  autoStart ? "bg-rose-600" : "bg-gray-300"
+                }`}
+                aria-label="Iniciar próximo ciclo automaticamente"
+              >
+                <span
+                  className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                    autoStart ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
