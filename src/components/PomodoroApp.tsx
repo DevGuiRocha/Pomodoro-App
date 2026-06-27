@@ -117,6 +117,7 @@ export default function PomodoroApp() {
             onSkip={handleSkip}
             shortcutsEnabled={!settingsOpen}
             autoStart={settings.autoStart}
+            cyclesUntilLongBreak={settings.cyclesUntilLongBreak}
           />
         </div>
         <div className="w-full lg:w-96 lg:py-8">

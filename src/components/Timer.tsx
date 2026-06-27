@@ -23,6 +23,8 @@ interface TimerProps {
   shortcutsEnabled: boolean;
   /** Se o próximo ciclo deve iniciar automaticamente ao trocar de modo. */
   autoStart: boolean;
+  /** Total de focos até a pausa longa (para renderizar os dots de progresso). */
+  cyclesUntilLongBreak: number;
 }
 
 export default function Timer({
@@ -34,6 +36,7 @@ export default function Timer({
   onSkip,
   shortcutsEnabled,
   autoStart,
+  cyclesUntilLongBreak,
 }: TimerProps) {
   const mode = MODES[modeId];
 
@@ -121,10 +124,26 @@ export default function Timer({
         </button>
       </div>
 
-      {/* Contador de ciclos */}
-      <p className="text-sm text-white/80">
-        Focos concluídos: <span className="font-bold">{completedFocus}</span>
-      </p>
+      {/* Dots de progresso do ciclo atual */}
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="flex gap-2">
+          {Array.from({ length: cyclesUntilLongBreak }, (_, i) => {
+            const filled = i < (completedFocus % cyclesUntilLongBreak);
+            return (
+              <span
+                key={i}
+                className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                  filled ? "bg-white" : "bg-white/30"
+                }`}
+                aria-hidden
+              />
+            );
+          })}
+        </div>
+        <p className="text-xs text-white/60">
+          {completedFocus % cyclesUntilLongBreak} de {cyclesUntilLongBreak} focos
+        </p>
+      </div>
 
       {/* Dica de atalhos de teclado */}
       <p className="hidden text-center text-xs text-white/50 sm:block">
